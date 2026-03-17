@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class Cargo:
     def __init__(self, weight: int) -> None:
         self.weight = weight
@@ -8,7 +11,7 @@ class BaseRobot:
             self,
             name: str,
             weight: float,
-            coords: list = None
+            coords: Optional[list] = None
     ) -> None:
         self.name = name
         self.weight = weight
@@ -31,9 +34,15 @@ class BaseRobot:
 
 
 class FlyingRobot(BaseRobot):
-    def __init__(self, name: str, weight: float, coords: list = None) -> None:
-        super().__init__(name, weight)
-        self.coords = coords if coords is not None else [0, 0, 0]
+    def __init__(
+            self,
+            name: str,
+            weight: float,
+            coords: Optional[list] = None
+    ) -> None:
+        determined_coords = coords if coords is not None else [0, 0, 0]
+        super().__init__(name, weight, determined_coords[:2])
+        self.coords = determined_coords
 
     def go_up(self, step: int = 1) -> None:
         self.coords[2] += step
@@ -44,23 +53,23 @@ class FlyingRobot(BaseRobot):
 
 class DeliveryDrone(FlyingRobot):
     def __init__(
-            self,
-            name: str,
-            weight: float,
-            max_load_weight: float,
-            current_load: Cargo = None,
-            coords: list = [0, 0, 0]
+        self,
+        name: str,
+        weight: float,
+        max_load_weight: float,
+        current_load: Optional[Cargo] = None,
+        coords: Optional[list] = None
     ) -> None:
-        super().__init__(name, weight, coords)
+        determined_coords = coords if coords is not None else [0, 0, 0]
+        super().__init__(name, weight, determined_coords)
         self.max_load_weight = max_load_weight
-        self.current_load = current_load
+        self.current_load: Optional[Cargo] = None
         if current_load is not None:
             self.hook_load(current_load)
 
     def hook_load(self, cargo: Cargo) -> None:
         if self.current_load is None and cargo.weight <= self.max_load_weight:
             self.current_load = cargo
-        return
 
     def unhook_load(self) -> None:
         self.current_load = None
